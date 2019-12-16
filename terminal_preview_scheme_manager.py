@@ -7,6 +7,7 @@ import zipfile
 import re
 import shutil
 import logging
+import ctypes, sys
 
 class WindowsTerminalSchemeDownloader(object):
     def download_repo(self):
@@ -119,9 +120,10 @@ class WindowsTerminalSchemeDownloader(object):
             shutil.rmtree(schemes_path)
         else:
             logging.info("Keeping temporary repo directory")
-
+    
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     downloader = WindowsTerminalSchemeDownloader()
     # downloader.download_and_add_schemes_to_config(repo_path='C:\\Users\\Gordin\\AppData\\Local\\Temp\\tmpyteiipoy\\', keep_repo=True)
     downloader.download_and_add_schemes_to_config(keep_repo=True)
+    input("Press any key to exit")
