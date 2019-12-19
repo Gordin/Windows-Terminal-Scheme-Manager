@@ -135,8 +135,10 @@ class WindowsTerminalConfigFile(object):
             name = random.choice(schemes)
         if profile:
             self.set_attribute_for_profile(profile, 'colorScheme', name)
+            logging.info('Scheme {} set for profile {}'.format(name, profile))
         else:
             self.set_attribute_for_all_profiles('colorScheme', name)
+            logging.info('Scheme {} set for all profiles'.format(name))
     
     def get_current_scheme(self, profile=None):
         if not profile:
@@ -155,6 +157,7 @@ class WindowsTerminalConfigFile(object):
                 else:
                     next_scheme = schemes[0]
                 break
+        logging.info('Cycling schemes. Next Theme: {}'.format(next_scheme))
         self.set_scheme(next_scheme, profile)
         self.write()
         
