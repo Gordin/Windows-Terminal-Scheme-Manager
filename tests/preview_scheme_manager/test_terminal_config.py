@@ -1,0 +1,119 @@
+import unittest
+import os
+import tempfile
+from preview_scheme_manager.terminal_config import WindowsTerminalConfigFile
+
+class TestWindowsTerminalConfigFile(unittest.TestCase):
+
+    TESTFILES_PATH = os.path.join('.', 'tests', 'preview_scheme_manager')
+    DEFAULT_CONFIG_PATH = os.path.join(TESTFILES_PATH, 'default_profiles.json')
+    FIXED_CONFIG_PATH = os.path.join(TESTFILES_PATH, 'fixed_default_profiles.json')
+    SCHEME_EXAMPLE = {
+        'name': '3024 Day',
+        'black': '#090300', 'red': '#db2d20', 'green': '#01a252',
+        'yellow': '#fded02', 'blue': '#01a0e4', 'purple': '#a16a94',
+        'cyan': '#b5e4f4', 'white': '#a5a2a2',
+        'brightBlack': '#5c5855', 'brightRed': '#e8bbd0',
+        'brightGreen': '#3a3432', 'brightYellow': '#4a4543',
+        'brightBlue': '#807d7c', 'brightPurple': '#d6d5d4',
+        'brightCyan': '#cdab53', 'brightWhite': '#f7f7f7',
+        'background': '#f7f7f7', 'foreground': '#4a4543'}
+
+    @classmethod
+    def setUpClass(cls):
+        cls._read_config()
+
+    @classmethod
+    def _read_config(cls):
+        with open(cls.DEFAULT_CONFIG_PATH, 'r') as file:
+            cls.config_text = file.read()
+            cls.config_lines = cls.config_text.split('\n')
+        with open(cls.FIXED_CONFIG_PATH, 'r') as file:
+            cls.fixed_text = file.read()
+            cls.fixed_lines = cls.config_text.split('\n')
+
+    def _choose_config_file(self, filename):
+        path = os.path.join(self.TESTFILES_PATH, filename)
+        self.obj = WindowsTerminalConfigFile(path=path)
+        with open(path, 'r') as file:
+            return file.read()
+
+    def _switch_to_profile_with_schemes(self):
+        return self._choose_config_file('profile_with_schemes.json')
+
+    def setUp(self):
+        self.obj = WindowsTerminalConfigFile(path=self.DEFAULT_CONFIG_PATH)
+
+    def assertFileEqualString(self, filename, text):
+        with open(filename) as file:
+            written_text = file.read()
+            self.assertEqual(text.strip(), written_text.strip())
+
+    def assertActiveScheme(self, scheme, profile=None):
+        gcs = self.obj.get_current_scheme
+        self.assertEqual(gcs(profile=profile), scheme)
+
+    def test_fix_formatting(self):
+        fixed_text = self.obj.fix_formatting(self.config_text)
+        self.assertNotRegex(fixed_text, r':\s*\[ *\]')
+        self.assertNotRegex(fixed_text, r':\s*\{ *\}')
+        self.assertNotRegex(fixed_text, r":\s*\n\s*([\[\{])")
+
+    def test_load_and_write(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            test_path = os.path.join(tmpdir, 'test_load_and_write.json')
+            self.obj.test_write(path=test_path)
+            self.assertFileEqualString(test_path, self.fixed_text)
+
+            new_config_text = self._switch_to_profile_with_schemes()
+            self.obj.test_write(path=test_path)
+            self.assertFileEqualString(test_path, new_config_text)
+
+    def test_get_schemes(self):
+        schemes = self.obj.get_schemes()
+        self.assertEqual(schemes, [])
+        self._switch_to_profile_with_schemes()
+        schemes = self.obj.get_schemes()
+        self.assertEqual(schemes, ['Monokai Soda', '3024 Day', 'AlienBlood'])
+
+    def test_get_current_scheme(self):
+        gcs = self.obj.get_current_scheme
+        self.assertIsNone(gcs())
+        self.assertIsNone(gcs('Windows PowerShell'))
+
+        self._switch_to_profile_with_schemes()
+        gcs = self.obj.get_current_scheme
+        self.assertActiveScheme('Monokai Soda')
+        self.assertActiveScheme('Monokai Soda', profile='Windows PowerShell')
+        self.assertActiveScheme('3024 Day', profile='cmd')
+
+    def test_set_scheme(self):
+        with self.assertRaises(Exception):
+            self.obj.set_scheme('Monokai Soda')
+
+        self._switch_to_profile_with_schemes()
+        self.assertActiveScheme('Monokai Soda')
+        self.obj.set_scheme('3024 Day')
+        self.assertActiveScheme('3024 Day')
+
+    def test_next_scheme(self):
+        self.assertIsNone(self.obj._next_scheme())
+
+        self._switch_to_profile_with_schemes()
+        next_scheme = self.obj._next_scheme
+
+        self.obj.set_scheme('AlienBlood')
+        self.assertActiveScheme('AlienBlood')
+        self.assertEqual(next_scheme(), 'Monokai Soda')
+        self.assertEqual(next_scheme(backwards=True), '3024 Day')
+
+        self.obj.set_scheme('Monokai Soda')
+        self.assertActiveScheme('Monokai Soda')
+        self.assertEqual(next_scheme(), '3024 Day')
+        self.assertEqual(next_scheme(backwards=True), 'AlienBlood')
+
+    def test_add_scheme(self):
+        self.obj.add_scheme_to_config(self.SCHEME_EXAMPLE)
+
+if __name__ == "__main__":
+    unittest.main()
