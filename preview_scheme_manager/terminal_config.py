@@ -4,7 +4,7 @@ import copy
 import json
 import re
 import sys
-from functools import lru_cache, reduce
+from functools import reduce
 from operator import getitem
 import random
 import filecmp
@@ -88,7 +88,6 @@ class WindowsTerminalConfigFile(object):
             return match[1]
         return None
 
-    @lru_cache()
     def __parse_without_comments(self, reload=False):
         if not reload and hasattr(self, 'config'):
             return
@@ -128,10 +127,10 @@ class WindowsTerminalConfigFile(object):
         except StopIteration:
             None, 0
         comments_before_line = (len(['x' for k in self.comments if k < first_changed_line_number]))
-        print('Line: ', first_changed_line_number)
-        print("Comments before line", comments_before_line)
+        # print('Line: ', first_changed_line_number)
+        # print("Comments before line", comments_before_line)
         first_changed_line_number_with_comments = first_changed_line_number + comments_before_line
-        print("With comments", first_changed_line_number_with_comments)
+        # print("With comments", first_changed_line_number_with_comments)
         length_difference = abs(len(new_lines) - len(old_lines))
         return first_changed_line_number_with_comments, length_difference
 
@@ -199,19 +198,19 @@ class WindowsTerminalConfigFile(object):
         profile[key] = value
 
     def add_scheme_to_config(self, scheme_dict):
+        self.__parse_without_comments()
         scheme_name = scheme_dict['name']
-        if scheme_name in self.get_schemes():
+        if scheme_name in self.schemes:
             return
 
         config_copy = copy.deepcopy(self.config)
         self.config['schemes'].append(scheme_dict)
+        self.schemes.append(scheme_name)
         changed_line_number, change_length = self.__get_line_number_for_change(config_copy, self.config)
         self.__increase_comment_offset_from_pos(
             start_pos=changed_line_number, increment_by=change_length)
         self.__assemble_config()
-        pass
 
-    @lru_cache()
     def get_schemes(self):
         self.__parse_without_comments()
         return [scheme['name'] for scheme in self.get('schemes')]

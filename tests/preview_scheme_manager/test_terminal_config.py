@@ -24,6 +24,12 @@ class TestWindowsTerminalConfigFile(unittest.TestCase):
         cls._read_config()
 
     @classmethod
+    def _read_test_file(cls, filename):
+        with open(os.path.join(cls.TESTFILES_PATH, filename), 'r') as file:
+            text = file.read()
+        return text
+
+    @classmethod
     def _read_config(cls):
         with open(cls.DEFAULT_CONFIG_PATH, 'r') as file:
             cls.config_text = file.read()
@@ -31,6 +37,10 @@ class TestWindowsTerminalConfigFile(unittest.TestCase):
         with open(cls.FIXED_CONFIG_PATH, 'r') as file:
             cls.fixed_text = file.read()
             cls.fixed_lines = cls.config_text.split('\n')
+
+    def setUp(self):
+        self.obj = WindowsTerminalConfigFile(path=self.DEFAULT_CONFIG_PATH)
+        self.obj.reload()
 
     def _choose_config_file(self, filename):
         path = os.path.join(self.TESTFILES_PATH, filename)
@@ -40,9 +50,6 @@ class TestWindowsTerminalConfigFile(unittest.TestCase):
 
     def _switch_to_profile_with_schemes(self):
         return self._choose_config_file('profile_with_schemes.json')
-
-    def setUp(self):
-        self.obj = WindowsTerminalConfigFile(path=self.DEFAULT_CONFIG_PATH)
 
     def assertFileEqualString(self, filename, text):
         with open(filename) as file:
@@ -113,7 +120,21 @@ class TestWindowsTerminalConfigFile(unittest.TestCase):
         self.assertEqual(next_scheme(backwards=True), 'AlienBlood')
 
     def test_add_scheme(self):
+        self.assertEqual(len(self.obj.schemes), 0)
+        self.assertEqual(len(self.obj.config['schemes']), 0)
         self.obj.add_scheme_to_config(self.SCHEME_EXAMPLE)
+        self.obj.add_scheme_to_config(self.SCHEME_EXAMPLE)
+        schemes = self.obj.schemes
+        scheme_dict = self.obj.config['schemes']
+        self.assertEqual(len(schemes), 1)
+        self.assertEqual(len(scheme_dict), 1)
+        self.assertEqual(scheme_dict[0]['name'], '3024 Day')
+        self.assertEqual(schemes[0], '3024 Day')
 
-if __name__ == "__main__":
-    unittest.main()
+    def test_add_scheme_and_write(self):
+        self.obj.add_scheme_to_config(self.SCHEME_EXAMPLE)
+        add_schemes_testfile = TestWindowsTerminalConfigFile._read_test_file('add_schemes.json')
+        with tempfile.TemporaryDirectory() as tmpdir:
+            test_path = os.path.join(tmpdir, 'test_add_scheme.json')
+            self.obj.test_write(path=test_path)
+            self.assertFileEqualString(test_path, add_schemes_testfile)
