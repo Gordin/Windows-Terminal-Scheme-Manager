@@ -122,8 +122,10 @@ class TestWindowsTerminalConfigFile(unittest.TestCase):
     def test_add_scheme(self):
         self.assertEqual(len(self.obj.schemes), 0)
         self.assertEqual(len(self.obj.config['schemes']), 0)
+
         self.obj.add_scheme_to_config(self.SCHEME_EXAMPLE)
         self.obj.add_scheme_to_config(self.SCHEME_EXAMPLE)
+
         schemes = self.obj.schemes
         scheme_dict = self.obj.config['schemes']
         self.assertEqual(len(schemes), 1)
@@ -136,5 +138,26 @@ class TestWindowsTerminalConfigFile(unittest.TestCase):
         add_schemes_testfile = TestWindowsTerminalConfigFile._read_test_file('add_schemes.json')
         with tempfile.TemporaryDirectory() as tmpdir:
             test_path = os.path.join(tmpdir, 'test_add_scheme.json')
+            self.obj.test_write(path=test_path)
+            self.assertFileEqualString(test_path, add_schemes_testfile)
+
+    def test_write_new_scheme(self):
+        self._choose_config_file('schemes_without_set_scheme.json')
+        self.obj.set_scheme('Monokai Soda')
+        self.assertActiveScheme('Monokai Soda')
+        self.obj.set_scheme('3024 Day', profile="cmd")
+        self.assertActiveScheme('3024 Day', profile="cmd")
+        add_schemes_testfile = TestWindowsTerminalConfigFile._read_test_file('schemes_with_set_scheme.json')
+        with tempfile.TemporaryDirectory() as tmpdir:
+            test_path = os.path.join(tmpdir, 'test_write_new_scheme.json')
+            self.obj.test_write(path=test_path)
+            self.assertFileEqualString(test_path, add_schemes_testfile)
+
+    def test_cycle_scheme(self):
+        self._switch_to_profile_with_schemes()
+        self.obj.cycle_schemes()
+        add_schemes_testfile = TestWindowsTerminalConfigFile._read_test_file('schemes_with_set_scheme.json')
+        with tempfile.TemporaryDirectory() as tmpdir:
+            test_path = os.path.join(tmpdir, 'test_cycle_scheme.json')
             self.obj.test_write(path=test_path)
             self.assertFileEqualString(test_path, add_schemes_testfile)

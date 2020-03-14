@@ -9,9 +9,15 @@ from operator import getitem
 import random
 import filecmp
 from datetime import datetime
+import subprocess
+import platform
 
 class WindowsTerminalConfigFile(object):
-    APPDATA = os.path.expandvars('%LOCALAPPDATA%')
+    if platform.system() == "Windows":
+        APPDATA = os.path.expandvars('%LOCALAPPDATA%')
+    else:
+        LOCALAPPDATA = subprocess.check_output(["powershell.exe", "[Environment]::GetFolderPath('LocalApplicationData')"], encoding='utf-8').strip()
+        APPDATA = subprocess.check_output(["wslpath", LOCALAPPDATA], encoding='utf-8').strip()
     DEFAULT_CONFIG_DIR = os.path.join(APPDATA, 'Packages', 'Microsoft.WindowsTerminal_8wekyb3d8bbwe', 'LocalState')
     DEFAULT_CONFIG_PATH = os.path.join(DEFAULT_CONFIG_DIR, 'profiles.json')
     DEFAULT_BACKUP_PATH = DEFAULT_CONFIG_DIR
@@ -249,7 +255,6 @@ class WindowsTerminalConfigFile(object):
             raise Exception("This config file does not have schemes to cycle :(")
         logging.info('Cycling schemes. Next Theme: {}'.format(next_scheme))
         self.set_scheme(next_scheme, profile)
-        self.write()
 
     def _next_scheme(self, profile=None, backwards=False):
         current_scheme = self.get_current_scheme(profile)
@@ -278,10 +283,3 @@ class WindowsTerminalConfigFile(object):
         empty_object_regex = re.compile(r':\s*\{ *\}')
         lines = empty_object_regex.sub(': {\n    }', lines)
         return lines
-
-
-if __name__ == "__main__":
-    conf = WindowsTerminalConfigFile()
-    conf.__parse_without_comments()
-    import ipdb; ipdb.set_trace()
-    print(conf.config)

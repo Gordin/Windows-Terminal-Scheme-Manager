@@ -1,0 +1,114 @@
+
+// To view the default settings, hold "alt" while clicking on the "Settings" button.
+// For documentation on these settings, see: https://aka.ms/terminal-documentation
+
+{
+    "$schema": "https://aka.ms/terminal-profiles-schema",
+
+    "defaultProfile": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
+
+    "profiles": [
+        {
+            // Make changes here to the powershell.exe profile
+            "guid": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
+            "name": "Windows PowerShell",
+            "commandline": "powershell.exe",
+            "hidden": false,
+            "colorScheme": "Monokai Soda"
+        },
+        {
+            // Make changes here to the cmd.exe profile
+            "guid": "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
+            "name": "cmd",
+            "commandline": "cmd.exe",
+            "hidden": false,
+            "colorScheme": "3024 Day"
+        },
+        {
+            "guid": "{a5a97cb8-8961-5535-816d-772efe0c6a3f}",
+            "hidden": false,
+            "name": "Arch",
+            "source": "Windows.Terminal.Wsl",
+            "colorScheme": "Monokai Soda"
+        },
+        {
+            "guid": "{b453ae62-4e3d-5e58-b989-0a998ec441b8}",
+            "hidden": false,
+            "name": "Azure Cloud Shell",
+            "source": "Windows.Terminal.Azure",
+            "colorScheme": "Monokai Soda"
+        }
+    ],
+
+    // Add custom color schemes to this array
+    "schemes": [
+        {
+            "background": "#1a1a1a",
+            "black": "#1a1a1a",
+            "blue": "#9d65ff",
+            "brightBlack": "#625e4c",
+            "brightBlue": "#9d65ff",
+            "brightCyan": "#58d1eb",
+            "brightGreen": "#98e024",
+            "brightPurple": "#f4005f",
+            "brightRed": "#f4005f",
+            "brightWhite": "#f6f6ef",
+            "brightYellow": "#e0d561",
+            "cyan": "#58d1eb",
+            "foreground": "#c4c5b5",
+            "green": "#98e024",
+            "name": "Monokai Soda",
+            "purple": "#f4005f",
+            "red": "#f4005f",
+            "white": "#c4c5b5",
+            "yellow": "#fa8419"
+        },
+        {
+            "background": "#f7f7f7",
+            "black": "#090300",
+            "blue": "#01a0e4",
+            "brightBlack": "#5c5855",
+            "brightBlue": "#807d7c",
+            "brightCyan": "#cdab53",
+            "brightGreen": "#3a3432",
+            "brightPurple": "#d6d5d4",
+            "brightRed": "#e8bbd0",
+            "brightWhite": "#f7f7f7",
+            "brightYellow": "#4a4543",
+            "cyan": "#b5e4f4",
+            "foreground": "#4a4543",
+            "green": "#01a252",
+            "name": "3024 Day",
+            "purple": "#a16a94",
+            "red": "#db2d20",
+            "white": "#a5a2a2",
+            "yellow": "#fded02"
+        },
+        {
+            "background": "#0f1610",
+            "black": "#112616",
+            "blue": "#2f6a7f",
+            "brightBlack": "#3c4812",
+            "brightBlue": "#00aae0",
+            "brightCyan": "#00e0c4",
+            "brightGreen": "#18e000",
+            "brightPurple": "#0058e0",
+            "brightRed": "#e08009",
+            "brightWhite": "#73fa91",
+            "brightYellow": "#bde000",
+            "cyan": "#327f77",
+            "foreground": "#637d75",
+            "green": "#2f7e25",
+            "name": "AlienBlood",
+            "purple": "#47587f",
+            "red": "#7f2b27",
+            "white": "#647d75",
+            "yellow": "#717f24"
+        }
+    ],
+
+    // Add any keybinding overrides to this array.
+    // To unbind a default keybinding, set the command to "unbound"
+    "keybindings": [
+    ]
+}
