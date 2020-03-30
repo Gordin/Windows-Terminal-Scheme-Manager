@@ -7,38 +7,39 @@
 
     "defaultProfile": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
 
-    "profiles": [
-        {
-            // Make changes here to the powershell.exe profile
-            "guid": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
-            "name": "Windows PowerShell",
-            "commandline": "powershell.exe",
-            "colorScheme": "Monokai Soda",
-            "hidden": false
+    "profiles": {
+        "defaults": {
+            // Put settings here that you want to apply to all profiles
         },
-        {
-            // Make changes here to the cmd.exe profile
-            "guid": "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
-            "name": "cmd",
-            "commandline": "cmd.exe",
-            "colorScheme": "3024 Day",
-            "hidden": false
-        },
-        {
-            "guid": "{a5a97cb8-8961-5535-816d-772efe0c6a3f}",
-            "hidden": false,
-            "name": "Arch",
-            "colorScheme": "Monokai Soda",
-            "source": "Windows.Terminal.Wsl"
-        },
-        {
-            "guid": "{b453ae62-4e3d-5e58-b989-0a998ec441b8}",
-            "hidden": false,
-            "colorScheme": "Monokai Soda",
-            "name": "Azure Cloud Shell",
-            "source": "Windows.Terminal.Azure"
-        }
-    ],
+        "list": [
+            {
+                // Make changes here to the powershell.exe profile
+                "guid": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
+                "name": "Windows PowerShell",
+                "commandline": "powershell.exe",
+                "hidden": false
+            },
+            {
+                // Make changes here to the cmd.exe profile
+                "guid": "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
+                "name": "cmd",
+                "commandline": "cmd.exe",
+                "hidden": false
+            },
+            {
+                "guid": "{a5a97cb8-8961-5535-816d-772efe0c6a3f}",
+                "hidden": false,
+                "name": "Arch",
+                "source": "Windows.Terminal.Wsl"
+            },
+            {
+                "guid": "{b453ae62-4e3d-5e58-b989-0a998ec441b8}",
+                "hidden": false,
+                "name": "Azure Cloud Shell",
+                "source": "Windows.Terminal.Azure"
+            }
+        ]
+    },
 
     // Add custom color schemes to this array
     "schemes": [
