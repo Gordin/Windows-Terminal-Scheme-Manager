@@ -84,7 +84,11 @@ class WindowsTerminalConfig(object):
         self.set_scheme(next_scheme, profile)
 
     def _next_scheme(self, profile=None, backwards=False):
-        current_scheme = self.get_current_scheme(profile, choose_first_if_none_chosen=True)
+        current_scheme = self.get_current_scheme(profile)
+        if not current_scheme:
+            current_scheme = self.get_current_scheme(profile, choose_first_if_none_chosen=True)
+            if not backwards:
+                return current_scheme
         logging.debug("profile: {}, scheme: {}".format(profile, current_scheme))
         schemes = self.schemes()
         if len(schemes) == 0:
@@ -251,7 +255,6 @@ class WindowsTerminalConfigFile(object):
         self.config = WindowsTerminalConfig.from_file(self.path)
 
     def test_write(self, path=DEFAULT_CONFIG_PATH.replace('profiles.json', 'profiles_test.json')):
-        self.reload()
         old_path = self.path
         self.path = path
         self.write()

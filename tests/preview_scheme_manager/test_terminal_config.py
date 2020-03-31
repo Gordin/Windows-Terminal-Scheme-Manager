@@ -40,8 +40,8 @@ class TestWindowsTerminalConfigFile(unittest.TestCase):
 
     def setUp(self):
         self.obj = WindowsTerminalConfigFile(path=self.DEFAULT_CONFIG_PATH)
-        self.config = self.obj.config
         self.obj.reload()
+        self.config = self.obj.config
 
     def _choose_config_file(self, filename):
         path = os.path.join(self.TESTFILES_PATH, filename)
@@ -124,61 +124,57 @@ class TestWindowsTerminalConfigFile(unittest.TestCase):
         self.assertDefaultScheme('3024 Day')
         self.assertActiveScheme('Monokai Soda', 'cmd')
 
-    # def test_next_scheme(self):
-    #     self.assertIsNone(self.obj._next_scheme())
+    def test_next_scheme(self):
+        self.assertIsNone(self.config._next_scheme())
 
-    #     self._switch_to_profile_with_schemes()
-    #     next_scheme = self.obj._next_scheme
+        self._switch_to_profile_with_schemes()
+        next_scheme = self.config._next_scheme
 
-    #     self.obj.set_scheme('AlienBlood')
-    #     self.assertActiveScheme('AlienBlood')
-    #     self.assertEqual(next_scheme(), 'Monokai Soda')
-    #     self.assertEqual(next_scheme(backwards=True), '3024 Day')
+        self.config.set_scheme('AlienBlood')
+        self.assertDefaultScheme('AlienBlood')
+        self.assertEqual(next_scheme(), 'Monokai Soda')
+        self.assertEqual(next_scheme(backwards=True), '3024 Day')
 
-    #     self.obj.set_scheme('Monokai Soda')
-    #     self.assertActiveScheme('Monokai Soda')
-    #     self.assertEqual(next_scheme(), '3024 Day')
-    #     self.assertEqual(next_scheme(backwards=True), 'AlienBlood')
+        self.config.set_scheme('Monokai Soda')
+        self.assertDefaultScheme('Monokai Soda')
+        self.assertEqual(next_scheme(), '3024 Day')
+        self.assertEqual(next_scheme(backwards=True), 'AlienBlood')
 
-    # def test_add_scheme(self):
-    #     self.assertEqual(len(self.obj.schemes), 0)
-    #     self.assertEqual(len(self.obj.config['schemes']), 0)
+    def test_add_scheme(self):
+        self.assertEqual(len(self.config.schemes()), 0)
 
-    #     self.obj.add_scheme_to_config(self.SCHEME_EXAMPLE)
-    #     self.obj.add_scheme_to_config(self.SCHEME_EXAMPLE)
+        self.config.add_scheme(self.SCHEME_EXAMPLE)
+        self.config.add_scheme(self.SCHEME_EXAMPLE)
 
-    #     schemes = self.obj.schemes
-    #     scheme_dict = self.obj.config['schemes']
-    #     self.assertEqual(len(schemes), 1)
-    #     self.assertEqual(len(scheme_dict), 1)
-    #     self.assertEqual(scheme_dict[0]['name'], '3024 Day')
-    #     self.assertEqual(schemes[0], '3024 Day')
+        schemes = self.config.schemes()
+        self.assertEqual(schemes, ['3024 Day'])
 
-    # def test_add_scheme_and_write(self):
-    #     self.obj.add_scheme_to_config(self.SCHEME_EXAMPLE)
-    #     add_schemes_testfile = TestWindowsTerminalConfigFile._read_test_file('add_schemes.json')
-    #     with tempfile.TemporaryDirectory() as tmpdir:
-    #         test_path = os.path.join(tmpdir, 'test_add_scheme.json')
-    #         self.obj.test_write(path=test_path)
-    #         self.assertFileEqualString(test_path, add_schemes_testfile)
+    def test_add_scheme_and_write(self):
+        self.config.add_scheme(self.SCHEME_EXAMPLE)
+        add_schemes_testfile = TestWindowsTerminalConfigFile._read_test_file('add_schemes.json')
+        with tempfile.TemporaryDirectory() as tmpdir:
+            test_path = os.path.join(tmpdir, 'test_add_scheme.json')
+            self.obj.test_write(path=test_path)
+            self.assertFileEqualString(test_path, add_schemes_testfile)
 
-    # def test_write_new_scheme(self):
-    #     self._choose_config_file('schemes_without_set_scheme.json')
-    #     self.obj.set_scheme('Monokai Soda')
-    #     self.assertActiveScheme('Monokai Soda')
-    #     self.obj.set_scheme('3024 Day', profile="cmd")
-    #     self.assertActiveScheme('3024 Day', profile="cmd")
-    #     add_schemes_testfile = TestWindowsTerminalConfigFile._read_test_file('schemes_with_set_scheme.json')
-    #     with tempfile.TemporaryDirectory() as tmpdir:
-    #         test_path = os.path.join(tmpdir, 'test_write_new_scheme.json')
-    #         self.obj.test_write(path=test_path)
-    #         self.assertFileEqualString(test_path, add_schemes_testfile)
+    def test_write_new_scheme(self):
+        self._choose_config_file('schemes_without_set_scheme.json')
+        self.config.set_scheme('Monokai Soda')
+        self.assertDefaultScheme('Monokai Soda')
+        self.config.set_scheme('3024 Day', profile="cmd")
+        self.assertActiveScheme('3024 Day', profile="cmd")
+        add_schemes_testfile = TestWindowsTerminalConfigFile._read_test_file('schemes_with_set_scheme.json')
+        with tempfile.TemporaryDirectory() as tmpdir:
+            test_path = os.path.join(tmpdir, 'test_write_new_scheme.json')
+            self.obj.test_write(path=test_path)
+            self.assertFileEqualString(test_path, add_schemes_testfile)
 
-    # def test_cycle_scheme(self):
-    #     self._switch_to_profile_with_schemes()
-    #     self.obj.cycle_schemes()
-    #     add_schemes_testfile = TestWindowsTerminalConfigFile._read_test_file('schemes_with_set_scheme.json')
-    #     with tempfile.TemporaryDirectory() as tmpdir:
-    #         test_path = os.path.join(tmpdir, 'test_cycle_scheme.json')
-    #         self.obj.test_write(path=test_path)
-    #         self.assertFileEqualString(test_path, add_schemes_testfile)
+    def test_cycle_scheme(self):
+        self._switch_to_profile_with_schemes()
+        self.config.cycle_schemes()
+        self.config.cycle_schemes(profile='cmd', backwards=True)
+        add_schemes_testfile = TestWindowsTerminalConfigFile._read_test_file('empty_then_cycle_scheme.json')
+        with tempfile.TemporaryDirectory() as tmpdir:
+            test_path = os.path.join(tmpdir, 'test_cycle_scheme.json')
+            self.obj.test_write(path=test_path)
+            self.assertFileEqualString(test_path, add_schemes_testfile)

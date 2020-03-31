@@ -7,14 +7,11 @@
 
     "defaultProfile": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
 
-    "profiles":
-    {
-        "defaults":
-        {
+    "profiles": {
+        "defaults": {
             // Put settings here that you want to apply to all profiles
         },
-        "list":
-        [
+        "list": [
             {
                 // Make changes here to the powershell.exe profile
                 "guid": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
@@ -43,7 +40,6 @@
             }
         ]
     },
-,
 
     // Add custom color schemes to this array
     "schemes": [
