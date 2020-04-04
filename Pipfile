@@ -10,12 +10,16 @@ autopep8 = "*"
 pexpect = "*"
 black = "*"
 coverage = "*"
+profiling = "*"
+pprofile = "*"
 
 [packages]
 npyscreen = "*"
 click = "*"
 sh = "*"
 libtmux = "*"
+windows-curses = "*"
+orjson = "*"
 
 [requires]
 python_version = "3.8"

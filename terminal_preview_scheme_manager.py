@@ -8,43 +8,49 @@ import click
 
 @click.group()
 @click.option('--debug', default='ERROR', help='sets debug level (INFO, WARNING, ERROR)')
-def cli(debug='ERROR'):
-    logging.basicConfig(level=getattr(logging, debug))
+@click.option("--config", default=None, help='use a different file as Terminal config')
+def cli(debug='ERROR', config=None):
+    logging.basicConfig(
+        format='%(asctime)s %(levelname)-8s %(message)s',
+        datefmt='%m-%d %H:%M:%S',
+        level=getattr(logging, debug)
+        )
 
 @click.command()
 # @click.argument('list')
 def list():
-    config = WindowsTerminalConfigFile()
-    schemes = config.get_schemes()
-    current_scheme = config.get_current_scheme()
+    config_file = WindowsTerminalConfigFile()
+    config_file.config
+    schemes = config_file.config.schemes()
+    current_scheme = config_file.config.get_current_scheme()
     click.echo('Current Scheme: {}'.format(current_scheme))
     click.echo('Available Schemes: {}'.format(', '.join(schemes)))
 
 @click.command()
 @click.option('--profile', default=None, help='name of profile to change scheme for. Defaults to all profiles')
 def next_scheme(profile):
-    config = WindowsTerminalConfigFile()
-    config.cycle_schemes(profile)
-    config.write()
-    current_scheme = config.get_current_scheme(profile)
+    config_file = WindowsTerminalConfigFile()
+    config_file.config.cycle_schemes(profile)
+    config_file.write()
+    current_scheme = config_file.config.get_current_scheme(profile)
     click.echo('New scheme: {}'.format(current_scheme))
 
 @click.command()
 @click.option('--profile', default=None, help='name of profile to change scheme for. Defaults to all profiles')
 def previous_scheme(profile):
-    config = WindowsTerminalConfigFile()
-    config.cycle_schemes(profile, backwards=True)
-    config.write()
-    current_scheme = config.get_current_scheme(profile)
+    config_file = WindowsTerminalConfigFile()
+    config_file.config.cycle_schemes(profile, backwards=True)
+    config_file.write()
+    current_scheme = config_file.config.get_current_scheme(profile)
     click.echo('New scheme: {}'.format(current_scheme))
 
 @click.command()
 @click.argument("scheme")
 def set(scheme):
-    config = WindowsTerminalConfigFile()
-    config.set_scheme(scheme)
-    config.write()
-    current_scheme = config.get_current_scheme(profile)
+    config_file = WindowsTerminalConfigFile()
+    config_file.config.set_scheme(scheme)
+    config_file.write()
+    current_scheme = config_file.config.get_current_scheme()
     click.echo('New scheme: {}'.format(current_scheme))
 
 

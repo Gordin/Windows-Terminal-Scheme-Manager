@@ -11,6 +11,8 @@ import filecmp
 from datetime import datetime
 import subprocess
 import platform
+from functools import lru_cache
+import orjson
 
 class WindowsTerminalConfig(object):
     def __init__(self, json, comments):
@@ -45,6 +47,7 @@ class WindowsTerminalConfig(object):
         changed_line_number, change_length = self.__get_line_number_for_change(config_copy, self.config)
         self.__increase_comment_offset_from_pos(
             start_pos=changed_line_number, increment_by=change_length)
+        logging.info('Added scheme {} to config'.format(scheme_name))
 
     def schemes(self):
         return [scheme['name'] for scheme in self.get('schemes')]
@@ -141,7 +144,7 @@ class WindowsTerminalConfig(object):
         return self
 
     @classmethod
-    def from_file(cls, path, reload=False):
+    def from_file(cls, path):
         logging.info("Trying to load Terminal config from {}".format(path))
         with open(path, 'r') as file:
             text = file.read()
@@ -151,6 +154,7 @@ class WindowsTerminalConfig(object):
 
     @classmethod
     def parse(cls, config_as_string):
+        logging.info("Parsing config file")
         text = WindowsTerminalConfigFile.fix_formatting(config_as_string)
         line_array = text.split('\n')
 
@@ -174,14 +178,50 @@ class WindowsTerminalConfig(object):
                 new_comments[line_number + increment_by] = comment
         self.comments = new_comments
 
+    @classmethod
+    def _get_formatted_lines(cls, json_dict):
+        dumped = orjson.dumps(json_dict, option=orjson.OPT_INDENT_2)
+        return WindowsTerminalConfigFile.fix_formatting(dumped.decode()).split('\n')
+
+    @classmethod
+    def _get_first_different_line(cls, lines1, lines2):
+        shortest = min(len(lines1), len(lines2))
+
+        def binary_search(pos, remaining_length=None, counter=0):
+            if remaining_length is None:
+                remaining_length = pos
+            counter += 1
+            if counter > 200:
+                import ipdb; ipdb.set_trace()
+            # print('pos: {} remaining_length: {}'.format(pos, remaining_length))
+            if pos == 0:
+                return 0 if lines1[0] != lines2[0] else None
+
+            if lines1[pos] == lines2[pos]:
+                next_distance = max(1, int(remaining_length / 2))
+                next_pos = pos + next_distance
+                return binary_search(next_pos, next_distance, counter)
+            else:
+                # check for end
+                if lines1[pos-1] == lines2[pos-1]:
+                    # print('Found it! {}'.format(pos))
+                    return pos
+                next_distance = max(1, int(remaining_length / 2))
+                next_pos = pos - next_distance
+                return binary_search(next_pos, next_distance, counter)
+        different_line = binary_search(int(shortest / 2))
+        return different_line
+
+
     def __get_line_number_for_change(self, old_json, new_json):
-        old_lines = WindowsTerminalConfigFile.fix_formatting(json.dumps(old_json, indent=4)).split('\n')
-        new_lines = WindowsTerminalConfigFile.fix_formatting(json.dumps(new_json, indent=4)).split('\n')
+        old_lines = WindowsTerminalConfig._get_formatted_lines(old_json)
+        new_lines = WindowsTerminalConfig._get_formatted_lines(new_json)
         # import difflib, tempfile
         # with tempfile.TemporaryFile(mode='w') as file:
         #     file.write(difflib.HtmlDiff().make_file(old_lines, new_lines))
         try:
-            first_changed_line_number = next(line_num for line_num, (line1, line2) in enumerate(zip(old_lines, new_lines)) if line1 != line2)
+            # first_changed_line_number = next(line_num for line_num, (line1, line2) in enumerate(zip(old_lines, new_lines)) if line1 != line2)
+            first_changed_line_number = WindowsTerminalConfig._get_first_different_line(old_lines, new_lines)
         except StopIteration:
             None, 0
         comments_before_line = (len(['x' for k in self.comments if k < first_changed_line_number]))
@@ -217,6 +257,9 @@ class WindowsTerminalConfigFile(object):
     DEFAULT_BACKUP_PATH = DEFAULT_CONFIG_DIR
     DEFAULT_BACKUP_FILENAME = 'profiles_{}.json'
     BACKUP_DATE_FORMAT = '%Y%m%d%H%M'
+    BRACKET_REGEX = re.compile(r":\s*\n\s*([\[\{])")
+    EMPTY_ARRAY_REGEX = re.compile(r"([ \t]*)(\"[^\[\n\"]+\"\: )\[[\t ]*\](,?)")
+    EMPTY_OBJECT_REGEX = re.compile(r"([ \t]*)(\"[^{\n\"]+\"\: ){[\t ]*}(,?)")
 
     def __init__(self, path=DEFAULT_CONFIG_PATH):
         if not os.path.exists(os.path.expandvars(path)):
@@ -253,6 +296,7 @@ class WindowsTerminalConfigFile(object):
 
     def reload(self):
         self.config = WindowsTerminalConfig.from_file(self.path)
+        return self.config
 
     def test_write(self, path=DEFAULT_CONFIG_PATH.replace('profiles.json', 'profiles_test.json')):
         old_path = self.path
@@ -270,13 +314,12 @@ class WindowsTerminalConfigFile(object):
 
     @classmethod
     def fix_formatting(cls, lines):
+        logging.debug('Fixing Formatting')
         # Removes newlines before opening [ and {
-        bracket_regex = re.compile(r":\s*\n\s*([\[\{])")
-        lines = bracket_regex.sub(': \\1', lines)
+        lines = cls.BRACKET_REGEX.sub(': \\1', lines)
         # Splits empty arrays in 2 lines
-        empty_array_regex = re.compile(r"([ \t]+)([^\[\n]+)\[[\t ]*\](,?)[\t ]*")
-        lines = empty_array_regex.sub('\\1\\2[\n\\1]\\3', lines)
+        lines = cls.EMPTY_ARRAY_REGEX.sub('\\1\\2[\n\\1]\\3', lines)
         # Splits empty objects in 2 lines
-        empty_object_regex = re.compile(r"([ \t]+)([^{\n]+){[\t ]*}(,?)[\t ]*")
-        lines = empty_object_regex.sub('\\1\\2{\n\\1}\\3', lines)
+        lines = cls.EMPTY_OBJECT_REGEX.sub('\\1\\2{\n\\1}\\3', lines)
+        logging.debug('Formatting fixed')
         return lines
