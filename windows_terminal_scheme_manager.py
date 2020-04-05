@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 import logging
-from preview_scheme_manager.downloader import WindowsTerminalSchemeDownloader
-from preview_scheme_manager.terminal_config import WindowsTerminalConfigFile
-from preview_scheme_manager.screen import SchemeManager
+from windows_terminal_scheme_manager.downloader import WindowsTerminalSchemeDownloader
+from windows_terminal_scheme_manager.terminal_config import WindowsTerminalConfigFile
+from windows_terminal_scheme_manager.screen import SchemeManager
 import click
 
 @click.group()
