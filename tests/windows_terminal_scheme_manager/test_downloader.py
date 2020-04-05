@@ -1,8 +1,8 @@
 import unittest
 import os
 import tempfile
-from preview_scheme_manager.terminal_config import WindowsTerminalConfigFile
-from preview_scheme_manager.downloader import WindowsTerminalSchemeDownloader
+from windows_terminal_scheme_manager.terminal_config import WindowsTerminalConfigFile
+from windows_terminal_scheme_manager.downloader import WindowsTerminalSchemeDownloader
 from multiprocessing import Process
 import http.server
 import socketserver
@@ -10,7 +10,7 @@ import socketserver
 def serve_schemes_zip():
     PORT = 8000
     Handler = http.server.SimpleHTTPRequestHandler
-    os.chdir(os.path.join('tests', 'preview_scheme_manager'))
+    os.chdir(os.path.join('tests', 'windows_terminal_scheme_manager'))
     with socketserver.TCPServer(("", PORT), Handler) as httpd:
         print("serving at port", PORT)
         httpd.serve_forever()

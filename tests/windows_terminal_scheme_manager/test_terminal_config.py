@@ -1,11 +1,11 @@
 import unittest
 import os
 import tempfile
-from preview_scheme_manager.terminal_config import WindowsTerminalConfigFile
+from windows_terminal_scheme_manager.terminal_config import WindowsTerminalConfigFile
 
 class TestWindowsTerminalConfigFile(unittest.TestCase):
 
-    TESTFILES_PATH = os.path.join('.', 'tests', 'preview_scheme_manager')
+    TESTFILES_PATH = os.path.join('.', 'tests', 'windows_terminal_scheme_manager')
     DEFAULT_CONFIG_PATH = os.path.join(TESTFILES_PATH, 'default_profiles.json')
     FIXED_CONFIG_PATH = os.path.join(TESTFILES_PATH, 'fixed_default_profiles.json')
     SCHEME_EXAMPLE = {

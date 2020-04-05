@@ -1,5 +1,5 @@
 import npyscreen
-from preview_scheme_manager.terminal_config import WindowsTerminalConfigFile
+from windows_terminal_scheme_manager.terminal_config import WindowsTerminalConfigFile
 import subprocess
 
 

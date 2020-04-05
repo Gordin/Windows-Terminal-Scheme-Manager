@@ -7,7 +7,7 @@ import os
 import zipfile
 import re
 import shutil
-from preview_scheme_manager.terminal_config import WindowsTerminalConfigFile
+from windows_terminal_scheme_manager.terminal_config import WindowsTerminalConfigFile
 
 class WindowsTerminalSchemeDownloader(object):
     DEFAULT_SCHEMES_URL = 'https://github.com/mbadolato/iTerm2-Color-Schemes/archive/master.zip'
