@@ -1,33 +1,11 @@
 ## Usage
 
-Before Using this make sure your profiles.json is formatted like this:
-```
-"key": [
-    {
-        "key": "value"
-    }
-],
-```
-and not like this:
-```
-"key":
-    [
-        {
-            "key": "value"
-        }
-    ],
-```
-The default config is inconsistent with this and if you don't do this the script WILL mess up the position of the comments in the file
+Install requirements with `pipenv install`
+Run with `pipenv run .\terminal_preview_scheme_manager.py`
+
+Download and add a lot of schemes to your config with `add-all-schemes`
+Open ui to skip through schemes with `ui`
 
 ## Tests
 
-Run the tests with `python -m unittest discover'
-
-## Building
-To build an executable with pyinstaller you need to install the dev version of pyinstaller because python 3.8 isn't supported yet
-
-`pip install https://github.com/pyinstaller/pyinstaller/archive/develop.zip`
-
-Build with
-
-`pyinstaller --onedir .\terminal_preview_sheme_downloader.py`
+Run the tests with `pipenv run coverage run -m unittest discover`

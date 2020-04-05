@@ -6,18 +6,12 @@ verify_ssl = true
 [dev-packages]
 ipdb = "*"
 ipython = "*"
-autopep8 = "*"
-pexpect = "*"
-black = "*"
 coverage = "*"
 profiling = "*"
-pprofile = "*"
 
 [packages]
 npyscreen = "*"
 click = "*"
-sh = "*"
-libtmux = "*"
 windows-curses = "*"
 orjson = "*"
 
