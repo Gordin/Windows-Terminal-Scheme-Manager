@@ -8,8 +8,7 @@ import click
 
 @click.group()
 @click.option('--debug', default='ERROR', help='sets debug level (INFO, WARNING, ERROR)')
-@click.option("--config", default=None, help='use a different file as Terminal config')
-def cli(debug='ERROR', config=None):
+def cli(debug='ERROR', config_file=None):
     logging.basicConfig(
         format='%(asctime)s %(levelname)-8s %(message)s',
         datefmt='%m-%d %H:%M:%S',
@@ -17,7 +16,7 @@ def cli(debug='ERROR', config=None):
         )
 
 @click.command()
-# @click.argument('list')
+@click.option("--config_file", default=None, help='use a different file as Terminal config')
 def list():
     config_file = WindowsTerminalConfigFile()
     config_file.config
@@ -27,6 +26,7 @@ def list():
     click.echo('Available Schemes: {}'.format(', '.join(schemes)))
 
 @click.command()
+@click.option("--config_file", default=None, help='use a different file as Terminal config')
 @click.option('--profile', default=None, help='name of profile to change scheme for. Defaults to all profiles')
 def next_scheme(profile):
     config_file = WindowsTerminalConfigFile()
@@ -36,6 +36,7 @@ def next_scheme(profile):
     click.echo('New scheme: {}'.format(current_scheme))
 
 @click.command()
+@click.option("--config_file", default=None, help='use a different file as Terminal config')
 @click.option('--profile', default=None, help='name of profile to change scheme for. Defaults to all profiles')
 def previous_scheme(profile):
     config_file = WindowsTerminalConfigFile()
@@ -45,6 +46,7 @@ def previous_scheme(profile):
     click.echo('New scheme: {}'.format(current_scheme))
 
 @click.command()
+@click.option("--config_file", default=None, help='use a different file as Terminal config')
 @click.argument("scheme")
 def set(scheme):
     config_file = WindowsTerminalConfigFile()
@@ -55,9 +57,10 @@ def set(scheme):
 
 
 @click.command()
-def add_all_schemes():
+@click.option("--config_file", default=None, help='use a different file as Terminal config')
+def add_all_schemes(config_file=None):
     downloader = WindowsTerminalSchemeDownloader()
-    downloader.download_and_add_schemes_to_config(keep_repo=True)
+    downloader.download_and_add_schemes_to_config(keep_repo=True, config_file=config_file)
 
 @click.command()
 def ui():

@@ -55,7 +55,7 @@ class WindowsTerminalSchemeDownloader(object):
         logging.info("Loaded all new schemes")
         return scheme_array
 
-    def download_and_add_schemes_to_config(self, repo_path=None, keep_repo=False):
+    def download_and_add_schemes_to_config(self, repo_path=None, keep_repo=False, config_file=None):
         # optional parameter is only there to test stuff without downloading the zip every time...
         if not repo_path:
             repo_zip = self.download_repo()
@@ -67,14 +67,14 @@ class WindowsTerminalSchemeDownloader(object):
             schemes_path = os.path.join(repo_path, 'iTerm2-Color-Schemes-master', 'windowsterminal')
         logging.debug("Repo Path: {}".format(schemes_path))
         new_schemes = self.get_all_schemes(schemes_path, schemes)
-        config_file = WindowsTerminalConfigFile()
+        config_file = WindowsTerminalConfigFile(path=config_file)
         config = config_file.config
         old_scheme_names = config_file.config.schemes()
         for new_scheme in new_schemes:
             if new_scheme['name'] in old_scheme_names:
                 logging.debug('Not adding scheme {} (already in config)'.format(new_scheme['name']))
                 continue
-            config.add_scheme(new_scheme)
+            config.add_scheme(new_scheme, reuse_copy=True)
         config_file.write()
         if not keep_repo:
             logging.info("Removing temporary repo directory")

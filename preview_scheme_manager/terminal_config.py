@@ -1,4 +1,5 @@
 import os
+import math
 import logging
 import copy
 import json
@@ -16,8 +17,9 @@ import orjson
 
 class WindowsTerminalConfig(object):
     def __init__(self, json, comments):
-        self.config = json
+        self.config = copy.deepcopy(json)
         self.comments = comments
+        self._config_copy = None
 
     def clone(self):
         config = copy.deepcopy(self.config)
@@ -37,17 +39,20 @@ class WindowsTerminalConfig(object):
     def get_defaults(self):
         return self.get('profiles', 'defaults')
 
-    def add_scheme(self, scheme_dict):
+    def add_scheme(self, scheme_dict, reuse_copy=False):
         scheme_name = scheme_dict['name']
         if scheme_name in self.schemes():
             return
 
-        config_copy = copy.deepcopy(self.config)
+        if not reuse_copy or not self._config_copy:
+            self._config_copy = copy.deepcopy(self.config)
         self.config['schemes'].append(scheme_dict)
-        changed_line_number, change_length = self.__get_line_number_for_change(config_copy, self.config)
+        changed_line_number, change_length = self.__get_line_number_for_change(self._config_copy, self.config)
         self.__increase_comment_offset_from_pos(
             start_pos=changed_line_number, increment_by=change_length)
         logging.info('Added scheme {} to config'.format(scheme_name))
+        if reuse_copy:
+            self._config_copy['schemes'].append(scheme_dict)
 
     def schemes(self):
         return [scheme['name'] for scheme in self.get('schemes')]
@@ -146,8 +151,14 @@ class WindowsTerminalConfig(object):
     @classmethod
     def from_file(cls, path):
         logging.info("Trying to load Terminal config from {}".format(path))
-        with open(path, 'r') as file:
-            text = file.read()
+        try:
+            with open(path, 'r') as file:
+                text = file.read()
+        except OSError:
+            print("Could not open config file at \"{}\"\nDoes it exist?".format(
+                path
+            ))
+            raise
 
         return WindowsTerminalConfig.parse(text)
 
@@ -185,32 +196,40 @@ class WindowsTerminalConfig(object):
 
     @classmethod
     def _get_first_different_line(cls, lines1, lines2):
-        shortest = min(len(lines1), len(lines2))
+        # This is the linear approach. Turns out this is really slow when
+        # you add all 200 schemes and the config file becomes 4000+ lines...
+        # return next(line_num for line_num, (line1, line2) in enumerate(zip(old_lines, new_lines)) if line1 != line2)
 
-        def binary_search(pos, remaining_length=None, counter=0):
-            if remaining_length is None:
-                remaining_length = pos
-            counter += 1
-            if counter > 200:
-                import ipdb; ipdb.set_trace()
+        # Find lines that are different with binary search.
+        # Works because the lines are "sorted" for this purpose
+        # (unchanged lines numbers < changed line numbers)
+        def binary_search(remaining_length, pos=None, counter=0):
+            # The counter is just for debugging...
+            counter +=1
+            # if counter > 200:
+            #     import ipdb; ipdb.set_trace()
+            if pos is None:
+                remaining_length = round(remaining_length / 2)
+                pos = remaining_length
+            next_distance = max(1, round(remaining_length / 2))
             # print('pos: {} remaining_length: {}'.format(pos, remaining_length))
             if pos == 0:
                 return 0 if lines1[0] != lines2[0] else None
-
             if lines1[pos] == lines2[pos]:
-                next_distance = max(1, int(remaining_length / 2))
-                next_pos = pos + next_distance
-                return binary_search(next_pos, next_distance, counter)
+                return binary_search(next_distance, pos + next_distance, counter)
             else:
-                # check for end
+                # lines[pos] are different, if thes are not, we might be done
                 if lines1[pos-1] == lines2[pos-1]:
-                    # print('Found it! {}'.format(pos))
-                    return pos
-                next_distance = max(1, int(remaining_length / 2))
-                next_pos = pos - next_distance
-                return binary_search(next_pos, next_distance, counter)
-        different_line = binary_search(int(shortest / 2))
-        return different_line
+                    # Check if this is REALLY the first change
+                    # We could have gotten lucky with lines like these: '    },'
+                    if "".join(lines1[0:pos]) == "".join(lines2[0:pos]):
+                        # print('Found it! {}'.format(pos))
+                        return pos
+                return binary_search(next_distance, pos - next_distance, counter)
+
+        shortest = min(len(lines1), len(lines2))
+        first_different_line_number = binary_search(shortest)
+        return first_different_line_number
 
 
     def __get_line_number_for_change(self, old_json, new_json):
@@ -261,7 +280,9 @@ class WindowsTerminalConfigFile(object):
     EMPTY_ARRAY_REGEX = re.compile(r"([ \t]*)(\"[^\[\n\"]+\"\: )\[[\t ]*\](,?)")
     EMPTY_OBJECT_REGEX = re.compile(r"([ \t]*)(\"[^{\n\"]+\"\: ){[\t ]*}(,?)")
 
-    def __init__(self, path=DEFAULT_CONFIG_PATH):
+    def __init__(self, path=None):
+        if path is None:
+            path = self.__class__.DEFAULT_CONFIG_PATH
         if not os.path.exists(os.path.expandvars(path)):
             sys.exit('Config file not found ({})'.format(path))
         self.path = os.path.expandvars(path)
