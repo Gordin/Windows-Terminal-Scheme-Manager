@@ -3,6 +3,7 @@ import os
 import tempfile
 from windows_terminal_scheme_manager.terminal_config import WindowsTerminalConfigFile
 
+
 class TestWindowsTerminalConfigFile(unittest.TestCase):
 
     TESTFILES_PATH = os.path.join('.', 'tests', 'windows_terminal_scheme_manager')
@@ -151,7 +152,8 @@ class TestWindowsTerminalConfigFile(unittest.TestCase):
 
     def test_add_scheme_and_write(self):
         self.config.add_scheme(self.SCHEME_EXAMPLE)
-        add_schemes_testfile = TestWindowsTerminalConfigFile._read_test_file('add_schemes.json')
+        add_schemes_testfile = TestWindowsTerminalConfigFile\
+            ._read_test_file('add_schemes.json')
         with tempfile.TemporaryDirectory() as tmpdir:
             test_path = os.path.join(tmpdir, 'test_add_scheme.json')
             self.obj.test_write(path=test_path)
@@ -163,7 +165,8 @@ class TestWindowsTerminalConfigFile(unittest.TestCase):
         self.assertDefaultScheme('Monokai Soda')
         self.config.set_scheme('3024 Day', profile="cmd")
         self.assertActiveScheme('3024 Day', profile="cmd")
-        add_schemes_testfile = TestWindowsTerminalConfigFile._read_test_file('schemes_with_set_scheme.json')
+        add_schemes_testfile = TestWindowsTerminalConfigFile\
+            ._read_test_file('schemes_with_set_scheme.json')
         with tempfile.TemporaryDirectory() as tmpdir:
             test_path = os.path.join(tmpdir, 'test_write_new_scheme.json')
             self.obj.test_write(path=test_path)
@@ -173,7 +176,8 @@ class TestWindowsTerminalConfigFile(unittest.TestCase):
         self._switch_to_profile_with_schemes()
         self.config.cycle_schemes()
         self.config.cycle_schemes(profile='cmd', backwards=True)
-        add_schemes_testfile = TestWindowsTerminalConfigFile._read_test_file('empty_then_cycle_scheme.json')
+        add_schemes_testfile = TestWindowsTerminalConfigFile\
+            ._read_test_file('empty_then_cycle_scheme.json')
         with tempfile.TemporaryDirectory() as tmpdir:
             test_path = os.path.join(tmpdir, 'test_cycle_scheme.json')
             self.obj.test_write(path=test_path)

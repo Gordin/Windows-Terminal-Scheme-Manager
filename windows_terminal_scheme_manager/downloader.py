@@ -5,12 +5,12 @@ import urllib.request
 import json
 import os
 import zipfile
-import re
-import shutil
 from windows_terminal_scheme_manager.terminal_config import WindowsTerminalConfigFile
 
+
 class WindowsTerminalSchemeDownloader(object):
-    DEFAULT_SCHEMES_URL = 'https://github.com/mbadolato/iTerm2-Color-Schemes/archive/master.zip'
+    DEFAULT_SCHEMES_URL =\
+       'https://github.com/mbadolato/iTerm2-Color-Schemes/archive/master.zip'
 
     def __init__(self, url=DEFAULT_SCHEMES_URL):
         self.url = url
@@ -23,7 +23,8 @@ class WindowsTerminalSchemeDownloader(object):
         logging.info("Successfully Downloaded Schemes")
         return tmp_file
 
-    def unpack_schemes(self, repo_zip, zip_scheme_path ='iTerm2-Color-Schemes-master/windowsterminal/'):
+    def unpack_schemes(self, repo_zip,
+                       zip_scheme_path='iTerm2-Color-Schemes-master/windowsterminal/'):
         tmpdir = tempfile.mkdtemp()
         logging.info("Unpacking Schemes to temporary directory '{}'".format(tmpdir))
         z = zipfile.ZipFile(repo_zip.name, 'r')
@@ -55,16 +56,22 @@ class WindowsTerminalSchemeDownloader(object):
         logging.info("Loaded all new schemes")
         return scheme_array
 
-    def download_and_add_schemes_to_config(self, repo_path=None, keep_repo=False, config_file=None):
-        # optional parameter is only there to test stuff without downloading the zip every time...
+    def download_and_add_schemes_to_config(self, repo_path=None, keep_repo=False,
+                                           config_file=None):
+        # optional parameter is only there to test stuff without downloading
+        # the zip every time...
         if not repo_path:
             repo_zip = self.download_repo()
             schemes_path, schemes = self.unpack_schemes(repo_zip)
-            logging.info('Run with this to skip re-downloading next time: --repo_path {}'.format(schemes_path))
-            schemes_path = os.path.join(schemes_path, 'iTerm2-Color-Schemes-master', 'windowsterminal')
+            logging.info('Run with this to skip re-downloading next time:\
+                 --repo_path {}'.format(schemes_path))
+            schemes_path = os.path.join(
+                schemes_path, 'iTerm2-Color-Schemes-master', 'windowsterminal')
         else:
             schemes = self.scheme_filenames(repo_path)
-            schemes_path = os.path.join(repo_path, 'iTerm2-Color-Schemes-master', 'windowsterminal')
+            schemes_path = os.path.join(
+                repo_path, 'iTerm2-Color-Schemes-master', 'windowsterminal')
+
         logging.debug("Repo Path: {}".format(schemes_path))
         new_schemes = self.get_all_schemes(schemes_path, schemes)
         config_file = WindowsTerminalConfigFile(path=config_file)
@@ -72,7 +79,8 @@ class WindowsTerminalSchemeDownloader(object):
         old_scheme_names = config_file.config.schemes()
         for new_scheme in new_schemes:
             if new_scheme['name'] in old_scheme_names:
-                logging.debug('Not adding scheme {} (already in config)'.format(new_scheme['name']))
+                logging.debug('Not adding scheme {} (already in config)'
+                              .format(new_scheme['name']))
                 continue
             config.add_scheme(new_scheme, reuse_copy=True)
         config_file.write()

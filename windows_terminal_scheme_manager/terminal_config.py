@@ -15,6 +15,7 @@ import platform
 from functools import lru_cache
 import orjson
 
+
 class WindowsTerminalConfig(object):
     def __init__(self, json, comments):
         self.config = copy.deepcopy(json)
@@ -28,7 +29,8 @@ class WindowsTerminalConfig(object):
 
     def get_default_config(self):
         default_guid = self.config.get('defaultProfile')
-        return next((profile for profile in self.profiles() if profile['guid'] == default_guid))
+        return next((profile for profile in self.profiles()
+                    if profile['guid'] == default_guid))
 
     def profiles(self):
         return self.get('profiles', 'list')
@@ -47,7 +49,8 @@ class WindowsTerminalConfig(object):
         if not reuse_copy or not self._config_copy:
             self._config_copy = copy.deepcopy(self.config)
         self.config['schemes'].append(scheme_dict)
-        changed_line_number, change_length = self.__get_line_number_for_change(self._config_copy, self.config)
+        changed_line_number, change_length = self.__get_line_number_for_change(
+            self._config_copy, self.config)
         self.__increase_comment_offset_from_pos(
             start_pos=changed_line_number, increment_by=change_length)
         logging.info('Added scheme {} to config'.format(scheme_name))
@@ -94,7 +97,8 @@ class WindowsTerminalConfig(object):
     def _next_scheme(self, profile=None, backwards=False):
         current_scheme = self.get_current_scheme(profile)
         if not current_scheme:
-            current_scheme = self.get_current_scheme(profile, choose_first_if_none_chosen=True)
+            current_scheme = self.get_current_scheme(
+                profile, choose_first_if_none_chosen=True)
             if not backwards:
                 return current_scheme
         logging.debug("profile: {}, scheme: {}".format(profile, current_scheme))
@@ -106,7 +110,8 @@ class WindowsTerminalConfig(object):
             schemes = list(reversed(schemes))
         for i, scheme in enumerate(schemes):
             if scheme == current_scheme:
-                logging.debug("i: {}, current_scheme: {}, new scheme pos: {}".format(i, current_scheme, (i + 1) % len(schemes)))
+                logging.debug("i: {}, current_scheme: {}, new scheme pos: {}".format(
+                    i, current_scheme, (i + 1) % len(schemes)))
                 next_scheme = schemes[(i + 1) % len(schemes)]
                 break
         return next_scheme
@@ -122,14 +127,16 @@ class WindowsTerminalConfig(object):
         if profile_name == 'DEFAULTS':
             profile = self.get_defaults()
         else:
-            profile = next((profile for profile in self.profiles() if profile['name'] == profile_name))
+            profile = next((profile for profile in self.profiles()
+                            if profile['name'] == profile_name))
         return profile.get(key)
 
     def get_profile(self, profile_name, from_other_obj=None):
         if profile_name in ('DEFAULTS', None):
             profile = self.get_defaults()
         else:
-            profile = next((profile for profile in self.profiles() if profile['name'] == profile_name))
+            profile = next((profile for profile in self.profiles()
+                            if profile['name'] == profile_name))
         return profile
 
     def set_attribute_for_profile(self, profile_name, key, value):
@@ -141,10 +148,12 @@ class WindowsTerminalConfig(object):
             profile_copy = config_copy.get_profile(profile_name)
             profile_copy[key] = value
 
-            changed_line_number, change_length = self.__get_line_number_for_change(self.config, config_copy.config)
+            changed_line_number, change_length = self.__get_line_number_for_change(
+                self.config, config_copy.config)
             if change_length == 0:
                 raise Exception("This should never happen :|")
-            self.__increase_comment_offset_from_pos(start_pos=changed_line_number, increment_by=change_length)
+            self.__increase_comment_offset_from_pos(start_pos=changed_line_number,
+                                                    increment_by=change_length)
         profile[key] = value
         return self
 
@@ -162,7 +171,6 @@ class WindowsTerminalConfig(object):
 
         return WindowsTerminalConfig.parse(text)
 
-
     @classmethod
     def parse(cls, config_as_string):
         logging.info("Parsing config file")
@@ -177,8 +185,8 @@ class WindowsTerminalConfig(object):
             else:
                 lines_without_comments.append(line)
 
-        return WindowsTerminalConfig(json.loads('\n'.join(lines_without_comments)), comments)
-
+        return WindowsTerminalConfig(json.loads('\n'.join(lines_without_comments)),
+                                     comments)
 
     def __increase_comment_offset_from_pos(self, start_pos=0, increment_by=1):
         new_comments = {}
@@ -198,14 +206,16 @@ class WindowsTerminalConfig(object):
     def _get_first_different_line(cls, lines1, lines2):
         # This is the linear approach. Turns out this is really slow when
         # you add all 200 schemes and the config file becomes 4000+ lines...
-        # return next(line_num for line_num, (line1, line2) in enumerate(zip(old_lines, new_lines)) if line1 != line2)
+        # return next(line_num for line_num, (line1, line2) in
+        #             enumerate(zip(old_lines, new_lines))
+        #             if line1 != line2)
 
         # Find lines that are different with binary search.
         # Works because the lines are "sorted" for this purpose
         # (unchanged lines numbers < changed line numbers)
         def binary_search(remaining_length, pos=None, counter=0):
             # The counter is just for debugging...
-            counter +=1
+            counter += 1
             # if counter > 200:
             #     import ipdb; ipdb.set_trace()
             if pos is None:
@@ -231,7 +241,6 @@ class WindowsTerminalConfig(object):
         first_different_line_number = binary_search(shortest)
         return first_different_line_number
 
-
     def __get_line_number_for_change(self, old_json, new_json):
         old_lines = WindowsTerminalConfig._get_formatted_lines(old_json)
         new_lines = WindowsTerminalConfig._get_formatted_lines(new_json)
@@ -239,25 +248,28 @@ class WindowsTerminalConfig(object):
         # with tempfile.TemporaryFile(mode='w') as file:
         #     file.write(difflib.HtmlDiff().make_file(old_lines, new_lines))
         try:
-            # first_changed_line_number = next(line_num for line_num, (line1, line2) in enumerate(zip(old_lines, new_lines)) if line1 != line2)
-            first_changed_line_number = WindowsTerminalConfig._get_first_different_line(old_lines, new_lines)
+            first_changed_line_number = WindowsTerminalConfig\
+                ._get_first_different_line(old_lines, new_lines)
         except StopIteration:
             None, 0
-        comments_before_line = (len(['x' for k in self.comments if k < first_changed_line_number]))
+        comments_before_line = (len(['_' for k in self.comments
+                                     if k < first_changed_line_number]))
         # print('Line: ', first_changed_line_number)
         # print("Comments before line", comments_before_line)
-        first_changed_line_number_with_comments = first_changed_line_number + comments_before_line
+        first_changed_line_number_with_comments =\
+            first_changed_line_number + comments_before_line
         # print("With comments", first_changed_line_number_with_comments)
         length_difference = abs(len(new_lines) - len(old_lines))
         return first_changed_line_number_with_comments, length_difference
 
     def assemble_config(self):
-        conf_string = WindowsTerminalConfigFile.fix_formatting(json.dumps(self.config, indent=4))
+        conf_string = WindowsTerminalConfigFile.fix_formatting(
+            json.dumps(self.config, indent=4))
         comment_offset = 0
         assembled_config_lines = []
 
         for i, line in enumerate(conf_string.split("\n")):
-            while (comment_for_current_line := self.comments.get(i + comment_offset)) != None:
+            while (comment_for_current_line := self.comments.get(i + comment_offset)) is not None: # noqa
                 assembled_config_lines.append(comment_for_current_line)
                 comment_offset += 1
             assembled_config_lines.append(line)
@@ -269,9 +281,13 @@ class WindowsTerminalConfigFile(object):
     if platform.system() == "Windows":
         APPDATA = os.path.expandvars('%LOCALAPPDATA%')
     else:
-        LOCALAPPDATA = subprocess.check_output(["powershell.exe", "[Environment]::GetFolderPath('LocalApplicationData')"], encoding='utf-8').strip()
-        APPDATA = subprocess.check_output(["wslpath", LOCALAPPDATA], encoding='utf-8').strip()
-    DEFAULT_CONFIG_DIR = os.path.join(APPDATA, 'Packages', 'Microsoft.WindowsTerminal_8wekyb3d8bbwe', 'LocalState')
+        LOCALAPPDATA = subprocess.check_output(
+            ["powershell.exe", "[Environment]::GetFolderPath('LocalApplicationData')"],
+            encoding='utf-8').strip()
+        APPDATA = subprocess.check_output(
+            ["wslpath", LOCALAPPDATA], encoding='utf-8').strip()
+    DEFAULT_CONFIG_DIR = os.path.join(
+        APPDATA, 'Packages', 'Microsoft.WindowsTerminal_8wekyb3d8bbwe', 'LocalState')
     DEFAULT_CONFIG_PATH = os.path.join(DEFAULT_CONFIG_DIR, 'profiles.json')
     DEFAULT_BACKUP_PATH = DEFAULT_CONFIG_DIR
     DEFAULT_BACKUP_FILENAME = 'profiles_{}.json'
@@ -289,21 +305,24 @@ class WindowsTerminalConfigFile(object):
         self.config = WindowsTerminalConfig.from_file(self.path)
 
     def backup_config_file(self, dest=DEFAULT_BACKUP_PATH):
-        destination_template = os.path.expandvars(os.path.join(dest, self.DEFAULT_BACKUP_FILENAME))
+        destination_template = os.path.expandvars(os.path.join(
+            dest, self.DEFAULT_BACKUP_FILENAME))
 
         try:
             config_mtime = datetime.fromtimestamp(os.stat(self.path).st_mtime)
         except FileNotFoundError:
             logging.info("No file found at {}, nothing to backup".format(self.path))
             return
-        backup_path = destination_template.format(config_mtime.strftime(self.BACKUP_DATE_FORMAT))
+        backup_path = destination_template.format(config_mtime.strftime(
+            self.BACKUP_DATE_FORMAT))
         logging.info("Backing up Terminal config file to {}".format(backup_path))
         with open(self.path, 'r') as file:
             with open(backup_path, 'w') as backup_file:
                 backup_file.write(file.read())
 
         filecmp.cmp(self.path, backup_path)
-        logging.info("Backed up and checked Terminal config file to {}".format(backup_path))
+        logging.info("Backed up and checked Terminal config file to {}".format(
+            backup_path))
 
     def remove_backups(self, dest=DEFAULT_BACKUP_PATH):
         regex = r"^profiles_\d{12}.json$"
@@ -319,7 +338,8 @@ class WindowsTerminalConfigFile(object):
         self.config = WindowsTerminalConfig.from_file(self.path)
         return self.config
 
-    def test_write(self, path=DEFAULT_CONFIG_PATH.replace('profiles.json', 'profiles_test.json')):
+    def test_write(self, path=DEFAULT_CONFIG_PATH.replace(
+                   'profiles.json', 'profiles_test.json')):
         old_path = self.path
         self.path = path
         self.write()

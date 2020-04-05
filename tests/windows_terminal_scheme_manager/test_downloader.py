@@ -1,11 +1,10 @@
 import unittest
 import os
-import tempfile
-from windows_terminal_scheme_manager.terminal_config import WindowsTerminalConfigFile
-from windows_terminal_scheme_manager.downloader import WindowsTerminalSchemeDownloader
 from multiprocessing import Process
+from windows_terminal_scheme_manager.downloader import WindowsTerminalSchemeDownloader
 import http.server
 import socketserver
+
 
 def serve_schemes_zip():
     PORT = 8000
@@ -14,6 +13,7 @@ def serve_schemes_zip():
     with socketserver.TCPServer(("", PORT), Handler) as httpd:
         print("serving at port", PORT)
         httpd.serve_forever()
+
 
 class TestWindowsTerminalSchemeDownloader(unittest.TestCase):
     TEST_ZIP = 'iTerm2-Color-Schemes-only-windowsterminal.zip'
