@@ -9,6 +9,7 @@ ipython = "*"
 coverage = "*"
 pprofile = "*"
 flake8 = "*"
+setuptools = "*"
 
 [packages]
 npyscreen = "*"
