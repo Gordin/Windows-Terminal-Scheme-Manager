@@ -10,6 +10,9 @@ coverage = "*"
 pprofile = "*"
 flake8 = "*"
 setuptools = "*"
+pyinstaller = "*"
+doit = "*"
+autopep8 = "*"
 
 [packages]
 npyscreen = "*"

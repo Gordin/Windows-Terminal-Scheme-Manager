@@ -21,7 +21,7 @@ def cli(debug='ERROR', config_file=None):
 @click.command()
 @click.option("--config_file", default=None,
               help='use a different file as Terminal config')
-def list():
+def list(config_file):
     config_file = WindowsTerminalConfigFile()
     config_file.config
     schemes = config_file.config.schemes()
@@ -35,7 +35,7 @@ def list():
               help='use a different file as Terminal config')
 @click.option('--profile', default=None,
               help='name of profile to change scheme for. Defaults to all profiles')
-def next_scheme(profile):
+def next_scheme(profile, config_file):
     config_file = WindowsTerminalConfigFile()
     config_file.config.cycle_schemes(profile)
     config_file.write()
@@ -48,7 +48,7 @@ def next_scheme(profile):
               help='use a different file as Terminal config')
 @click.option('--profile', default=None,
               help='name of profile to change scheme for. Defaults to all profiles')
-def previous_scheme(profile):
+def previous_scheme(profile, config_file):
     config_file = WindowsTerminalConfigFile()
     config_file.config.cycle_schemes(profile, backwards=True)
     config_file.write()
@@ -71,7 +71,7 @@ def set(scheme):
 @click.command()
 @click.option("--config_file", default=None,
               help='use a different file as Terminal config')
-def add_all_schemes(config_file=None):
+def add_all_schemes(config_file):
     downloader = WindowsTerminalSchemeDownloader()
     downloader.download_and_add_schemes_to_config(
         keep_repo=True, config_file=config_file)
