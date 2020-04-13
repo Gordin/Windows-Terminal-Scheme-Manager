@@ -54,6 +54,9 @@ class TestWindowsTerminalConfigFile(unittest.TestCase):
     def _switch_to_profile_with_schemes(self):
         return self._choose_config_file('profile_with_schemes.json')
 
+    def _switch_to_profile_with_all_schemes(self):
+        return self._choose_config_file('profile_with_all_schemes.json')
+
     def _switch_to_profile_with_set_schemes(self):
         return self._choose_config_file('schemes_with_set_scheme.json')
 
@@ -156,6 +159,24 @@ class TestWindowsTerminalConfigFile(unittest.TestCase):
             ._read_test_file('add_schemes.json')
         with tempfile.TemporaryDirectory() as tmpdir:
             test_path = os.path.join(tmpdir, 'test_add_scheme.json')
+            self.obj.test_write(path=test_path)
+            self.assertFileEqualString(test_path, add_schemes_testfile)
+
+    def test_remove_scheme_and_write(self):
+        self._switch_to_profile_with_all_schemes()
+        schemes_in_config = len(self.config.schemes())
+        schemes_to_remove = ['3024 Day', 'synthwave', 'SeaShells']
+
+        for scheme_name in schemes_to_remove:
+            self.config.remove_scheme(scheme_name)
+            schemes = self.config.schemes()
+            self.assertNotIn(scheme_name, schemes)
+        self.assertEqual(len(schemes), schemes_in_config - len(schemes_to_remove))
+
+        add_schemes_testfile = TestWindowsTerminalConfigFile\
+            ._read_test_file('profile_with_almost_all_schemes.json')
+        with tempfile.TemporaryDirectory() as tmpdir:
+            test_path = os.path.join(tmpdir, 'test_remove_scheme.json')
             self.obj.test_write(path=test_path)
             self.assertFileEqualString(test_path, add_schemes_testfile)
 

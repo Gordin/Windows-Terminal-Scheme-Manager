@@ -57,6 +57,22 @@ class WindowsTerminalConfig(object):
         if reuse_copy:
             self._config_copy['schemes'].append(scheme_dict)
 
+    def remove_scheme(self, scheme_name):
+        if scheme_name not in self.schemes():
+            return
+
+        self._config_copy = copy.deepcopy(self.config)
+        i_of_scheme_to_remove = next((
+            i for i, scheme in enumerate(self.config['schemes'])
+            if scheme['name'] == scheme_name
+        ))
+        self.config['schemes'].pop(i_of_scheme_to_remove)
+        changed_line_number, change_length = self.__get_line_number_for_change(
+            self._config_copy, self.config)
+        self.__increase_comment_offset_from_pos(
+            start_pos=changed_line_number, increment_by=-change_length)
+        logging.info('Removed scheme {} from config'.format(scheme_name))
+
     def schemes(self):
         return [scheme['name'] for scheme in self.get('schemes')]
 
@@ -205,10 +221,13 @@ class WindowsTerminalConfig(object):
     @classmethod
     def _get_first_different_line(cls, lines1, lines2):
         # This is the linear approach. Turns out this is really slow when
-        # you add all 200 schemes and the config file becomes 4000+ lines...
+        # you add all 200+ schemes and the config file becomes 4000+ lines...
         # return next(line_num for line_num, (line1, line2) in
         #             enumerate(zip(old_lines, new_lines))
         #             if line1 != line2)
+
+        def equal_up_to(line):
+            return "".join(lines1[0:line]) == "".join(lines2[0:line])
 
         # Find lines that are different with binary search.
         # Works because the lines are "sorted" for this purpose
@@ -216,25 +235,19 @@ class WindowsTerminalConfig(object):
         def binary_search(remaining_length, pos=None, counter=0):
             # The counter is just for debugging...
             counter += 1
-            # if counter > 200:
+            # if counter > 300:
             #     import ipdb; ipdb.set_trace()
             if pos is None:
                 remaining_length = round(remaining_length / 2)
                 pos = remaining_length
             next_distance = max(1, round(remaining_length / 2))
-            # print('pos: {} remaining_length: {}'.format(pos, remaining_length))
             if pos == 0:
                 return 0 if lines1[0] != lines2[0] else None
-            if lines1[pos] == lines2[pos]:
+            if equal_up_to(pos):
                 return binary_search(next_distance, pos + next_distance, counter)
             else:
-                # lines[pos] are different, if thes are not, we might be done
-                if lines1[pos-1] == lines2[pos-1]:
-                    # Check if this is REALLY the first change
-                    # We could have gotten lucky with lines like these: '    },'
-                    if "".join(lines1[0:pos]) == "".join(lines2[0:pos]):
-                        # print('Found it! {}'.format(pos))
-                        return pos
+                if equal_up_to(pos - 1):
+                    return pos
                 return binary_search(next_distance, pos - next_distance, counter)
 
         shortest = min(len(lines1), len(lines2))

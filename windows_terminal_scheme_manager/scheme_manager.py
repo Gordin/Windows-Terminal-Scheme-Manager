@@ -78,6 +78,22 @@ def add_all_schemes(config_file):
 
 
 @click.command()
+@click.argument('name')
+@click.option("--config_file", default=None,
+              help='use a different file as Terminal config')
+def remove_scheme(name, config_file):
+    config_file = WindowsTerminalConfigFile()
+    config_file.config.remove_scheme(name)
+    current_scheme = config_file.config.get_current_scheme()
+    if current_scheme == name:
+        config_file.config.cycle_schemes()
+        current_scheme = config_file.config.get_current_scheme()
+        click.echo('Deleted Scheme was active, switched to next scheme: {}'.format(
+            current_scheme))
+    config_file.write()
+
+
+@click.command()
 def ui():
     ui = SchemeManager()
     ui.run()
@@ -89,6 +105,7 @@ cli.add_command(previous_scheme)
 cli.add_command(locals()['set'])
 cli.add_command(add_all_schemes)
 cli.add_command(ui)
+cli.add_command(remove_scheme)
 
 if __name__ == "__main__":
     cli()
