@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='windows_terminal_scheme_manager',
-    version='0.2',
+    version='0.3',
     packages=['windows_terminal_scheme_manager'],
     include_package_data=True,
     install_requires=[
